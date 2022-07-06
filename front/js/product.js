@@ -1,12 +1,19 @@
 const params = new URLSearchParams(document.location.search);
 // la variable id va récupérer la valeur du paramètre _id
-const id = params.get("_id");
+const id = params.get("id");
 
 // on fait un fetch avec l'id pour recuperer les informations du produit 
 fetch(`http://localhost:3000/api/products/${id}`).then(response => response.json().then(data => {
     document.title = data.name
     printProduct(data)
 }))
+    .catch((err) => {
+        let article = document.querySelector('article')
+        article.innerHTML = '';
+        let h1 = document.createElement('h1')
+        h1.innerText = 'Erreur 404 - Not found'
+        article.appendChild(h1)
+    })
 
 /*Recoit les informations du produit puis les affiches */
 function printProduct(data) {
@@ -48,9 +55,9 @@ function printProduct(data) {
             }
         }
         else {
-            products = [];
-            data.quantity = quantity;
             if (verifyCQ(data.colors, data.quantity)) {
+                products = [];
+                data.quantity = quantity;
                 addToCart(products, data)
             }
             else {
@@ -60,29 +67,39 @@ function printProduct(data) {
     })
 }
 
-/* Ajoute au panier un produit, tri le panier puis verifie si le produit est déjà présent si oui on additionne les 2 quantités
-    et on garde une seule ligne dans le panier
+/* On check dans le panier si le produit y est déjà si oui on additionne les quantité sinon on ajoute le produit
 */
 function addToCart(products, data) {
-    products.push(data);
-    products.sort(function (a, b) {
-        return (a._id.localeCompare(b._id));
-    });
-
-    let cart = products;
-
+    let k = 0;
     for (let i = 0; i < products.length; i++) {
-        for (let k = 0; k < products.length; k++) {
-            if (products[i]._id == cart[k]._id && i != k && cart[i].colors == cart[k].colors) {
-                products[i].quantity += cart[k].quantity;
-                products.splice(k, 1);
-            }
+        if (products[i].colors == data.colors && products[i]._id == data._id) {
+            products[i].quantity += data.quantity;
+            tri(products);
+            localStorage.setItem("product", JSON.stringify(products));
+            k++
         }
+    }
+
+    if (k === 0) {
+        products.push(data);
+        tri(products);
         localStorage.setItem("product", JSON.stringify(products));
     }
     alert(data.name + " " + data.colors + " ajouté au panier ! ")
 }
 
+// tri le tableau par id et par couleur
+function tri(tab) {
+    tab.sort(function compare(a, b) {
+        if (a._id < b._id) return -1;
+        if (a._id > b._id) return 1;
+        if (a._id = b._id) {
+            if (a.colors < b.colors) return -1;
+            if (a.colors > b.colors) return 1;
+        }
+        return 0;
+    });
+}
 /* On verifie que la couleur et la quantité sont correctes si oui on retourne vrai sinon faux */
 function verifyCQ(color, quantity) {
     if (color == "" || quantity == 0) {

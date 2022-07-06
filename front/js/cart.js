@@ -23,32 +23,87 @@ else {
 /* Cette fonction récupère les données d'un produit puis les affiche sur la page */
 function printArticle(product) {
 
+  /**---CREATION DES ELEMENTS ---**/
+  let article = document.createElement("article");
+
+  let div_img = document.createElement("div");
+  let div_content = document.createElement("div");
+  let div_description = document.createElement("div");
+  let div_settings = document.createElement("div");
+  let div_quantity = document.createElement("div");
+  let div_delete = document.createElement("div");
+
+  let img = document.createElement('img');
+  let h2 = document.createElement('h2');
+  let input_quantity = document.createElement('input')
+
+  let p_colors = document.createElement('p');
+  let p_price = document.createElement('p');
+  let p_quantity = document.createElement('p');
+  let p_delete = document.createElement('p');
+
+  /**---setAttributs sur les elements ---**/
+  article.setAttribute("class", 'cart__item')
+  article.setAttribute("data-id", `${product._id}`)
+  article.setAttribute("data-color", `${product.colors}`)
+
+  Object.assign(img, {
+    src: `${product.imageUrl}`,
+    alt: `${product.altTxt}`
+  })
+
+  Object.assign(input_quantity, {
+    type: "number",
+    className: "itemQuantity",
+    name: "itemQuantity",
+    min: "1",
+    max: "100",
+    value: `${product.quantity}`
+  })
+
+  div_img.setAttribute("class", "cart__item__img")
+  div_content.setAttribute("class", "cart__item__content")
+  div_description.setAttribute("class", "cart__item__content__description")
+  div_settings.setAttribute("class", "cart__item__content__settings")
+  div_quantity.setAttribute("class", "cart__item__content__settings__quantity")
+  div_delete.setAttribute("class", "cart__item__content__settings__delete")
+
+
+  p_colors.setAttribute("id", "colors")
+  p_price.setAttribute("id", "price")
+  p_quantity.setAttribute("id", "quantity")
+  p_delete.setAttribute("class", "deleteItem")
+
+  /**---innerText---**/
+
+  h2.innerText = `${product.name}`
+  p_colors.innerText = `${product.colors}`
+  p_price.innerText = `${product.price} x ${product.quantity} = ${product.price * product.quantity} €`
+  p_quantity.innerText = "Qté : "
+  p_delete.innerText = "Supprimer"
+
+  /**---appendChild---**/
+  div_img.appendChild(img)
+  div_quantity.appendChild(p_quantity)
+  div_quantity.appendChild(input_quantity)
+
+  div_delete.appendChild(p_delete)
+
+  div_description.appendChild(h2)
+  div_description.appendChild(p_colors)
+  div_description.appendChild(p_price)
+
+  div_settings.appendChild(div_quantity)
+  div_settings.appendChild(div_delete)
+  div_content.appendChild(div_description, div_settings)
+  div_content.appendChild(div_settings)
+
+  article.appendChild(div_img)
+  article.appendChild(div_content)
+
+  document.getElementById('cart__items').appendChild(article);
   totalQuantity += parseInt(product.quantity);
   totalPrice += product.price * product.quantity;
-
-  let article = document.querySelector("#cart__items")
-  article.innerHTML +=
-    `<article class="cart__item" data-id="${product._id}" data-couleur="${product.colors}" data-quantité="${product.quantity}"> 
-<div class="cart__item__img">
-  <img src="${product.imageUrl}" alt="${product.altTxt}"/>
-</div>
-<div class="cart__item__content">
-  <div class="cart__item__content__titlePrice">
-    <h2>${product.name}</h2>
-    <span>couleur : ${product.colors}</span>
-    <p data-prix="${product.price}">${product.price} €</p>
-  </div>
-  <div class="cart__item__content__settings">
-    <div class="cart__item__content__settings__quantity">
-      <p>Qté : </p>
-      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${product.quantity}">
-    </div>
-    <div class="cart__item__content__settings__delete">
-      <p class="deleteItem" data-id="${product._id}" data-couleur="${product.colors}">Supprimer</p>
-    </div>
-  </div>
-</div>
-</article>`;
   document.querySelector("#totalPrice").innerHTML = totalPrice;
   document.querySelector("#totalQuantity").innerHTML = parseInt(totalQuantity)
 
@@ -106,14 +161,12 @@ const email = document.getElementById('email');
 let regexName = new RegExp("^([ \u00c0-\u01ffa-zA-Z'\-])+$")
 let regexCity = new RegExp("^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$")
 let regexMail = new RegExp("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
-let regexAddress = new RegExp("")
+let regexAddress = new RegExp("^[a-zA-Z0-9_.+-]")
 
 const regexTab = [regexName, regexName, regexAddress, regexCity, regexMail];
 const fields = [firstName, lastName, address, city, email];
 const errorSelector = ["firstNameErrorMsg", "lastNameErrorMsg", "addressErrorMsg", "cityErrorMsg", "emailErrorMsg"]
 const errorMsg = ["Veuillez saisir un prénom correct ! ", "Veuillez saisir un nom correct ! ", "Veuillez saisir une adresse correcte ! ", "Veuillez saisir une ville correcte ! ", "Veuillez saisir une adresse e-mail correcte ! "]
-
-
 
 
 form.addEventListener('submit', e => {
@@ -149,9 +202,7 @@ function verifyFields() {
       document.getElementById(errorSelector[i]).innerHTML = ""
       k++
     }
-    else {
-      document.getElementById(errorSelector[i]).innerHTML = errorMsg[i]
-    }
+    else document.getElementById(errorSelector[i]).innerHTML = errorMsg[i]
   }
   if (k == fields.length) return true
   else return false
@@ -177,7 +228,6 @@ function order(contact, products) {
     .then((res) => (res.json()))
     .then((data) => {
       // envoyé à la page confirmation, autre écriture de la valeur "./confirmation.html?commande=${data.orderId}"
-      console.log(window.location)
       window.location.href = `confirmation.html?commande=${data.orderId}`;
     })
     .catch(function (err) {

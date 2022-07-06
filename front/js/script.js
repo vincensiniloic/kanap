@@ -4,7 +4,7 @@ fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
     // ce que l'on a reçu et qui a été transformé en json sera appelé data
     .then((data) => {
-        printData(data, "#items")
+        printData(data)
     })
     // dans le cas d'une erreur remplace le contenu de titre par un h1 au contenu de erreur 404 et renvoit en console l'erreur.
     .catch((err) => {
@@ -13,16 +13,34 @@ fetch("http://localhost:3000/api/products")
     });
 
 /* Affiche tous les produits récuperés grâce à l'API */
-function printData(data, target) {
+function printData(data) {
 
-    for (let article of data) {
-        document.querySelector(target).innerHTML += `<a href="./product.html?_id=${article._id}">
-        <article>
-          <img src="${article.imageUrl}" alt="${article.altTxt}">
-          <h3 class="productName">${article.name}</h3>
-          <p class="productDescription">${article.description}</p>
-        </article>
-      </a>`;
+    for (let item of data) {
+
+        let lien = document.createElement('a');
+        let article = document.createElement('article');
+        let img = document.createElement('img');
+        let h3 = document.createElement('h3');
+        let p = document.createElement('p');
+
+        lien.setAttribute("href", `./product.html?id=${item._id}`);
+
+        img.setAttribute("src", `${item.imageUrl}`);
+        img.setAttribute("alt", `${item.altTxt}`);
+
+        h3.setAttribute("class", `productName`);
+        h3.innerText = `${item.name}`
+
+        p.setAttribute("class", `productDescription`);
+        p.innerText = `${item.description}`
+
+        article.appendChild(img)
+        article.appendChild(h3)
+        article.appendChild(p)
+
+        lien.appendChild(article)
+
+        document.getElementById('items').appendChild(lien);
     }
 }
 
